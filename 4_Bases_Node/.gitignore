@@ -1,0 +1,5 @@
+# Modulos de Node, reconstruir con npm install
+/node_modules
+
+# Archivos temporales de salida de los usuarios
+/salida/*.txt
