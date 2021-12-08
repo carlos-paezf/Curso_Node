@@ -71,3 +71,48 @@ readline.question(`\nPresionse ${'ENTER'.cyan} para continuar\n`, (opt) => {
 ```
 
 ## Repetir el menú de forma infinita
+
+Es importante que esperemos y devolvamos el valor que el usuario ingresa, esto lo podemos hacer con async y await, pero en este caso la solución más sencilla es con `Promise()`. Para el método de `mostrarMenu()` encerramos la lógica de nuestro método dentro de la promesa y resolvemos con la opción ingresada:
+
+```js
+const mostrarMenu = () => {
+    return new Promise(resolve => {
+        ...
+
+        readline.question('Seleccione una opción: ', (opt) => {
+            readline.close()
+            resolve(opt)
+        })
+    })
+}
+```
+
+Y hacemos algo similar para `pausa()`:
+
+```js
+const pausa = () => {
+    return new Promise(resolve => {
+        ...
+
+        readline.question(`\nPresionse ${'ENTER'.cyan} para continuar\n`, (opt) => {
+            readline.close()
+            resolve()
+        })
+    })
+}
+```
+
+Ahora bien, una vez que hemos podido capturar los valores que el usuario ingresa, debemos usarlos para mostrar el menú o para salir de la aplicación. El ciclo debe ser un `do{} while()`, ya que nos permite ejecutar el método si o si una vez, y luego se hacen las validaciones. Definimos una variable que va a tomar el valor de la opción que se retorna de esperar `mostrarMenu()` y la usamos para el análisis de si salimos de la aplicación o mostramos la pausa:
+
+```js
+const main = async () => {
+    console.clear()
+
+    let opt = '0'
+    do {
+        opt = await mostrarMenu()
+        console.log({opt})
+        opt !== '0' && await pausa()
+    } while (opt !== '0')
+}
+```
