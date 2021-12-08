@@ -158,7 +158,7 @@ Pero la forma anterior presenta muchos problemas, por ejemplo que se nos ingrese
 
 ## package.json - init - install - uninstall
 
-Para poder instalar paquetes de terceros, debemos contar con un archivo llamado `package.json`. Para crearlo con valores iniciales por defecto usamos el comando `npm init -Y`, pero para conceptos practicos del ejercicio, solo usamos `npm init`.
+Para poder instalar paquetes de terceros, debemos contar con un archivo llamado `package.json`. Para crearlo con valores iniciales por defecto usamos el comando `npm init -y`, pero para conceptos practicos del ejercicio, solo usamos `npm init`.
 
 Al ingresar dicho comando se no va a pedir que ingresemos el nombre del paquete, la versión, una descripción, un punto de entrada, un comando de texto, un repositorio de git, keywords, autor, licencia. Al final esto genera una vista previa de lo que se va a crear.
 
