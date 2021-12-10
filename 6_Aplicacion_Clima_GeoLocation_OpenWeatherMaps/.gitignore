@@ -1,0 +1,5 @@
+# node_modules, reconstruir con npm install
+/node_modules
+
+# Variables de entorno
+.env

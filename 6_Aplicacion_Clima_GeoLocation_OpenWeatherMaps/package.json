@@ -1,0 +1,19 @@
+{
+  "name": "6_aplicacion_clima_geolocation_openweathermaps",
+  "version": "1.0.0",
+  "description": "La sección se enfoca en los siguientes temas:",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.24.0",
+    "colors": "^1.4.0",
+    "dotenv": "^10.0.0",
+    "inquirer": "^8.2.0"
+  }
+}
