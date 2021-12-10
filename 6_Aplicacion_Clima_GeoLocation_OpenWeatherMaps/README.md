@@ -501,6 +501,16 @@ class Busquedas {
 }
 ```
 
+La función anterior la usamos en el constructor de la clase:
+
+```js
+class Busquedas {
+    constructor() {
+        this.leerDB()
+    }
+}
+```
+
 También se creó un método que permita devolver la información de historial de manera Capitalizada. Para ello, se toma el arreglo del historial, por cada elemento se hace una separación por espacios y por cada nuevo elemento generado por la función `split()`, lo mapeamos y a la primera posición se le pone mayuscula y se le une el resto de elementos desde la posición 1. Finalmente se une todo el elemento del historial con espacios.
 
 ```js
