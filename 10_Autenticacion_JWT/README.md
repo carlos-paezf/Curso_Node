@@ -338,7 +338,7 @@ const SECRET_KEY = process.env.SECRET_KEY
 
 const validateJWT = (req = request, res = response, next) => {
     const token = req.header('x-token')
-    if (!token) return res.status(4001).json({ msg: "No hay token en la petición" })
+    if (!token) return res.status(401).json({ msg: "No hay token en la petición" })
 
     try {
         const { uid } = jwt.verify(token, SECRET_KEY)
