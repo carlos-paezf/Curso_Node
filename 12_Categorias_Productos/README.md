@@ -755,3 +755,199 @@ const productExistsByID = async (id) => {
     if (!productExists.status) throw new Error(`El producto con id ${id} está suspendida en la base de datos`)
 }
 ```
+
+## Ruta para realizar búsquedas
+
+Vamos a crear una ruta (`routes/search.routes.js`) y un controlador (`controllers/search.controller.js`) para Buscar o Search. Luego, en la clase de Server añadimos un nuevo path:
+
+```js
+class Server {
+    constructor() {
+        ...
+        this.paths = {
+            ...
+            search: '/api/search'
+        }
+    }
+    ...
+    routes() {
+        ...
+        this.app.use(this.paths.search, require('../routes/search.routes'))
+    }
+}
+```
+
+La ruta de Search tiene la peculiaridad de que recibe una colección y un término de búsqueda, por ello nuestra ruta queda de la siguiente manera:
+
+```js
+router.get('/:collection/:term', search)
+```
+
+## Búsquedas en Base de Datos
+
+Primero vamos a definir las colecciones que están disponibles para hacer las búsqueda:
+
+```js
+const allowedCollections = [
+    'users',
+    'roles',
+    'categories',
+    'products'
+]
+```
+
+Dentro del controllador debemos recibir los 2 parámetros de búsqueda que definimos. Hacemos el analisis de si la coleccion ingresada está dentro de las colecciones que permitimos buscar. Luego procedemos mediante un Switch a comparar los valores ingresados en la colección y a darles una lógica determinada. En caso de que la colección ingresada pase la validación de las permitidas y entre en nuestro control y no tenga ninguna logica, entonces retornamos un Error 500 que es del lado del servidor.
+
+Por ejemplo tenemos que la colección ingresada es de Usuarios, debemos llamar un método para hacer su respectiva búsqueda.
+
+```js
+const search = (req, res = response) => {
+    const { collection, term } = req.params
+
+    if (!allowedCollections.includes(collection)) return res.status(400).json({ msg: `Las colecciones permitidas son ${allowedCollections}` })
+
+    switch (collection) {
+        case 'users': searchUsers(term, res); break;
+        case 'categories': break;
+        case 'products': break;
+        default: res.status(500).json({ msg: 'Búsqueda no controlada' }); break;
+    }
+    re.json({
+        msg: 'Buscar',
+        collection,
+        term
+    })
+}
+```
+
+El método para buscar a los usuarios puede buscar por el id, el correo o por el nombre de los mismos. Una vez busque en la base de datos, entonces retorna un arreglo con los resultados, y en caso de no encontrar nada retorna un arreglo vacio. Para saber si el termino ingresado es un id o un nombre o un correo, creamos una variable que almacene el boleano de la respuesta de `ObjectId.isValid()` que nos ofrece Mongoose. En caso de ser un id valido de MongoDB, va a buscar al usuario que tenga ese id.
+
+```js
+const { ObjectId } = require('mongoose').Types
+
+
+const searchUsers = async (term = '', res = response) => {
+    const isMongoId = ObjectId.isValid(term)
+    if (isMongoId) {
+        const user = await User.findById(term)
+        res.json({
+            results: user ? [ user ] : [] 
+        })
+    }
+}
+```
+
+## Buscar por otros argumentos
+
+En caso de que al buscar el usuario, el termino ingresado no sea un id, debemos tomar en consideración de que se trata de un nombre o un correo. Lo primero que vamos a hacer es crear una expresión regular que convierta el termino de búsqueda en un insensitive case, lo cual nos permite que se haga match con resultados en minusculas, mayusculas o tan solo con una parte de un string en la base de datos.
+
+Luego ejecutamos 2 promesas al mismo tiempo para obtener tanto el total, como los usuarios que tengan las siguientes condiciones: Por medio de `$or` logramos que la búsqueda traiga los resultados que hagan match en el nombre o en el correo, pero en ambos casos por medio de `$and`, el estatus del resultado debe ser true.
+
+```js
+const searchUsers = async (term = '', res = response) => {
+    ...
+    const regex = new RegExp(term, 'i')
+
+    const [total, users] = await Promise.all([
+        User.count({
+            $or: [{ name: regex }, { email: regex }],
+            $and: [{ status: true }]
+        }),
+        User.find({
+            $or: [{ name: regex }, { email: regex }],
+            $and: [{ status: true }]
+        })
+    ])
+    
+    return res.json({
+        total,
+        results: users
+    })
+}
+```
+
+## Buscar en otras colecciones
+
+Para buscar las categorías validamos si el termino ingresado es un id o si es un nombre, así que la base del método es similar al de buscar usuarios, solo que vamos a añadir el `populate()` en el campo del usuario.
+
+```js
+const searchCategories = (term = '', res = response) => {
+    const isMongoId = ObjectId.isValid(term)
+    if (isMongoId) {
+        const category = await Category.findById(term).populate({
+            path: 'user',
+            select: 'name email'
+        })
+        return res.json({
+            results: category ? [category] : []
+        })
+    }
+
+    const regex = new RegExp(term, 'i')
+
+    const [total, categories] = await Promise.all([
+        Category.count({ name: regex, status: true }),
+        Category.find({ name: regex, status: true }).populate({
+            path: 'user',
+            select: 'name email'
+        })
+    ])
+
+    return res.json({
+        total,
+        results: categories
+    })
+}
+```
+
+En el caso de buscar productos tomamos la misma base del método para buscar categorías y le añadimos el `populate()` para el campo de la categoría.
+
+```js
+const searchProducts = (term = '', res = response) => {
+    const isMongoId = ObjectId.isValid(term)
+    if (isMongoId) {
+        const product = await Product.findById(term).populate('user', 'name').populate('category', 'name')
+        return res.json({
+            results: product ? [product] : []
+        })
+    }
+
+    const regex = new RegExp(term, 'i')
+
+    const [total, products] = await Promise.all([
+        Product.count({ name: regex, status: true }),
+        Product.find({ name: regex, status: true }).populate('user', 'name').populate('category', 'name')
+    ])
+
+    return res.json({
+        total,
+        results: products
+    })
+}
+```
+
+Finalmente nuestro controlador de la búsquedas quedaría de la siguiente manera:
+
+```js
+const search = (req, res = response) => {
+    const { collection, term } = req.params
+
+    if (!allowedCollections.includes(collection)) return res.status(400).json({ msg: `Las colecciones permitidas son ${allowedCollections}` })
+
+    switch (collection) {
+        case 'users': searchUsers(term, res); break;
+        case 'categories': searchCategories(term, res); break;
+        case 'products': searchProducts(term, res); break;
+        default: res.status(500).json({ msg: 'Búsqueda no controlada' }); break;
+    }
+    re.json({
+        msg: 'Buscar',
+        collection,
+        term
+    })
+}
+```
+
+## Desplegar en Heroku
+
+Agregamos todos los cambios al commit y lo enviamos a la rama de Heroku `git push heroku main`.
