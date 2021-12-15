@@ -15,10 +15,14 @@ const allowedCollections = [
 const searchUsers = async (term = '', res = response) => {
     const isMongoId = ObjectId.isValid(term)
     if (isMongoId) {
-        const user = await User.findById(term)
-        return res.json({
-            results: user ? [user] : []
-        })
+        try {
+            const user = await User.findById(term)
+            return res.json({
+                results: user ? [user] : []
+            })
+        } catch (error) {
+            throw new Error(error)
+        }
     }
 
     const regex = new RegExp(term, 'i')
@@ -44,13 +48,17 @@ const searchUsers = async (term = '', res = response) => {
 const searchCategories = async (term = '', res = response) => {
     const isMongoId = ObjectId.isValid(term)
     if (isMongoId) {
-        const category = await Category.findById(term).populate({
-            path: 'user',
-            select: 'name email'
-        })
-        return res.json({
-            results: category ? [category] : []
-        })
+        try {
+            const category = await Category.findById(term).populate({
+                path: 'user',
+                select: 'name email'
+            })
+            return res.json({
+                results: category ? [category] : []
+            })
+        } catch (error) {
+            throw new Error(error)
+        }
     }
 
     const regex = new RegExp(term, 'i')
@@ -73,14 +81,18 @@ const searchCategories = async (term = '', res = response) => {
 const searchProducts = async (term = '', res = response) => {
     const isMongoId = ObjectId.isValid(term)
     if (isMongoId) {
-        const product = await Product.findById(term)
-            .populate('user', 'name')
-            .populate({
-                path: 'category', select: 'name'
+        try {
+            const product = await Product.findById(term)
+                .populate('user', 'name')
+                .populate({
+                    path: 'category', select: 'name'
+                })
+            return res.json({
+                results: product ? [product] : []
             })
-        return res.json({
-            results: product ? [product] : []
-        })
+        } catch (error) {
+            throw new Error(error)
+        }
     }
 
     const regex = new RegExp(term, 'i')
@@ -112,7 +124,7 @@ const search = async (req, res = response) => {
         case 'products': searchProducts(term, res); break;
         default: res.status(500).json({ msg: 'Búsqueda no controlada' }); break;
     }
-    re.json({
+    res.json({
         msg: 'Buscar',
         collection,
         term
