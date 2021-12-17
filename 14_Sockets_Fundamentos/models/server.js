@@ -4,6 +4,7 @@ require('colors')
 const http = require('http')
 const express = require('express')
 const cors = require('cors')
+const { socketController } = require('../sockets/controller')
 
 
 class Server {
@@ -26,18 +27,7 @@ class Server {
     routes = () => { }
 
     sockets = () => {
-        this.io.on('connection', socket => {
-            console.log(`Client conectado:`.blue, socket.id)
-
-            socket.on('disconnect', () => {
-                console.log(`Cliente desconectado:`.cyan, socket.id)
-            })
-
-            socket.on('send-message', (payload) => {
-                console.log(`Mensaje recibido en el servidor:`.italic)
-                console.log(payload)
-            })
-        })
+        this.io.on('connection', socketController)
     }
 
     listen = () => {

@@ -21,6 +21,11 @@ socket.on('disconnect', () => {
 })
 
 
+socket.on('send-message', (payload) => {
+    console.log(payload)
+})
+
+
 btnSend.addEventListener('click', () => {
     const message = txtMessage.value
     const payload = {
@@ -28,5 +33,7 @@ btnSend.addEventListener('click', () => {
         id: '1234',
         fecha:  new Date()
     }
-    socket.emit('send-message', payload)
+    socket.emit('send-message', payload, (id) => {
+        console.log(`Desde el server: ${id}`)
+    })
 })

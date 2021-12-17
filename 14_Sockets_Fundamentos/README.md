@@ -289,3 +289,92 @@ btnSend.addEventListener('click', () => {
 ```
 
 ## Emitir desde el servidor - Escuchar en el cliente
+
+Para enviar un mensaje desde el servidor, enviamos un evento personalizado, el cual deben escuchar los clientes de mi aplicación:
+
+```js
+class Server {
+    ....
+    sockets = () => {
+        this.io.on('connection', socket => {
+            ...
+            socket.on('send-message', (payload) => {
+                ...
+                this.io.emit('send-message', payload)
+            })
+        })
+    }
+}
+```
+
+En nuestro `socket-client.js` escuchamos el evento de la siguiente manera:
+
+```js
+socket.on('send-message', (payload) => {
+    console.log(payload)
+})
+```
+
+Cada que un cliente envié un mensaje, el servidor lo va a recibir y lo podra enviar a los demás usuarios.
+
+## Retroalimentación de emisiones del cliente al servidor
+
+Si queremos una retroalimentación por parte del servidor, debemos recibir además de l payload, un callback con algun elemento solicitado:
+
+```js
+class Server {
+    ...
+    sockets() {
+        ...
+        socket.on('send-message', (payload, callback) => {
+                ...
+                const id = 123456
+                callback(id)
+            })
+    }
+}
+```
+
+Nuestro cliente lo va a solicitar de la siguiente manera:
+
+```js
+btnSend.addEventListener('click', () => {
+    ...
+    socket.emit('send-message', payload, (id) => {
+        console.log(`Desde el server: ${id}`)
+    })
+})
+```
+
+## Broadcast - Ordenar nuestro código
+
+Vamos a crear un archivo independiente para la comunicación de sockets. Creamos el archivo `sockets/controller.js` y pasamos la función anonima que teniamos en nuestro servidor a dicho controlador. La cuestión es que ahora cambiamos la instrucción `this.io`, el cual debe usarse desde un servicio rest, en donde no tenemos acceso al socket. Si ponemos solo `socket.emit()`, el evento solo sera escuchado por el cliente que genera el mensaje. Para lograr que se emita a los demás usuarios menos a la fuente, usamos `socket.broadcast.emit`:
+
+```js
+const socketController = (socket) => {
+    ...
+    socket.on('send-message', (payload, callback) => {
+        ...
+        socket.broadcast.emit('send-message', payload)
+        ...
+    })
+}
+
+
+module.exports = {
+    socketController
+}
+```
+
+## Sockets a Heroku
+
+Creamos una nueva aplicación en el dashboard de Heroku. Excluimos los node_modules y el archivo `.env`. Inicializamos el repositorio en local con el comando `git init`. Añadimos los cambios con el comando `git add .`. Hacemos commit con el comando `git commit -m "Nombre del commit"`. Nos logeamos con el comando `heroku login`. Añadimos el enlace a nuestro repositorio en Heroku con el comando `heroku git:remote -a sockets--node-udemy`. Consultamos la rama con `git branch` y ejecutamos el comando `git push heroku <nombre de la rama>`. Una vez termine de desplegar la aplicación, podemos abrirla desde el dashboard de nuestra aplicación en Heroku.
+
+Para observar los logs de nuestra aplicación escribimos el comando `heroku logs --tail`.
+
+Importante que en archivo `index.html`, en vez de referenciar el script de io desde localhost, se haga desde el host de heroku
+
+```html
+<!-- <script src="http://localhost:8080/socket.io/socket.io.js"></script> -->
+<script src="https://sockets--node-udemy.herokuapp.com/socket.io/socket.io.js"></script>
+```
