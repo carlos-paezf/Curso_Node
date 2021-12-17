@@ -606,3 +606,33 @@ En la siguiente tabla se muestran todos los endpoints resultantes de la sección
 |                      | Obtener la foto de un producto         | GET                                                                 | {{url-uploads}}/products/`id-Document`            |
 |                      | Actualizar en cloudinary un usuario    | PUT (Contiene un body de tipo file)                                 | {{url-uploads}}/cloudinary/users/`id-Document`    |
 |                      | Actualizar en cloudinary un producto   | PUT (Contiene un body de tipo file)                                 | {{url-uploads}}/cloudinary/products/`id-Document` |
+
+## Corrección de error al desplegar en heroku
+
+Para desplegar en heroku se siguieron los siguientes pasos:
+
+- `git init`
+- `git add .`
+- `git commit -m "Nombre del commit"`
+- `heroku login`
+- `heroku git:remote -a restserver-nodejs-mongo`
+- `git branch`
+- `git push heroku <nombre de la rama>`
+
+Una vez termine de desplegar la aplicación, podemos abrirla desde el dashboard de nuestra aplicación en Heroku. Para observar los logs de nuestra aplicación escribimos el comando `heroku logs --tail`.
+
+Viendo los logs, aparecieron algunos errores. Primero, dentro de MongoDB Atlas debemos configurar los IP de acceso a nuestro cluster, lo podemos dejar público o le podemos añadir una dirección IP privada. 
+
+Otro error era que al hacer consultas con los endpoints no se obtenía ningún dato. Para solucionar este error, se instalo el paquete connect-timeout con el comando `npm i connect-timeout` y dentro de nuestro Server hicimos la siguiente configuración:
+
+```js
+const timeout = require('connect-timeout')
+
+class Server {
+    ...
+    middlewares() {
+        this.app.use(timeout('360s'))
+        ...
+    }
+}
+```

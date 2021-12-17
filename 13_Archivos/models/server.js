@@ -3,6 +3,7 @@ require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
 const fileUpload = require('express-fileupload')
+const timeout = require('connect-timeout')
 
 const ConfigDB = require('../database/config.db')
 
@@ -32,6 +33,7 @@ class Server {
 
     middlewares() {
         this.app.use(cors())
+        this.app.use(timeout('360s'))
         this.app.use(express.json())
         this.app.use(express.static('public'))
         this.app.use(fileUpload({
