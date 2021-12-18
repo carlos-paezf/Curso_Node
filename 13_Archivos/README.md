@@ -800,7 +800,7 @@ module.exports = {
 }
 ```
 
-Una última correción se presenta dentro del controlador de uploads. Cuando la imagen se sube en local, se puede observar por medio de `res.sedFile()`, pero cuando la imagen se referencia a Cloudinary, debería mostrar la url y no el background de imagen no existente.
+Una última corrección se presenta dentro del controlador de uploads. Cuando la imagen se sube en local, se puede observar por medio de `res.sedFile()`, pero cuando la imagen se referencia a Cloudinary, debería mostrar la url y no el background de imagen no existente.
 
 ```js
 const showImage = async (req, res = response) => {
@@ -818,3 +818,5 @@ const showImage = async (req, res = response) => {
     ...
 }
 ```
+
+Esta ya no es una corrección, sino una nota. Para que funciones el registro con google desde heroku, debemos añadir en la sección de credenciales, en **Origenes autorizados de JavaScript**, la URI del proyecto en Heroku: `https://restserver-nodejs-mongo.herokuapp.com`.
