@@ -799,3 +799,22 @@ module.exports = {
     search
 }
 ```
+
+Una última correción se presenta dentro del controlador de uploads. Cuando la imagen se sube en local, se puede observar por medio de `res.sedFile()`, pero cuando la imagen se referencia a Cloudinary, debería mostrar la url y no el background de imagen no existente.
+
+```js
+const showImage = async (req, res = response) => {
+    ...
+    try {
+        ...
+        if (model.image) {
+            const pathImage = path.join(__dirname, '../uploads', collection, model.image)
+            if (fs.existsSync(pathImage)) return res.sendFile(pathImage)
+            else return res.json({ image: model.image })
+        }
+    } catch ({ error, status }) {
+        ...
+    }
+    ...
+}
+```

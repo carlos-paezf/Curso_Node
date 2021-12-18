@@ -98,6 +98,7 @@ const showImage = async (req, res = response) => {
         if (model.image) {
             const pathImage = path.join(__dirname, '../uploads', collection, model.image)
             if (fs.existsSync(pathImage)) return res.sendFile(pathImage)
+            else return res.json({ image: model.image })
         }
     } catch ({ error, status }) {
         return res.status(status).json({ msg: error })
