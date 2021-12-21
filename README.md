@@ -13,3 +13,7 @@ Algunas de las instalaciones recomendadas para el curso son las siguientes: ([Do
 - Git
 - Github
 - Node
+
+## Certificado de finalización del curso
+
+![certificado](UC-fe9714c6-a2a1-48bb-8b09-57547fc7aad3.jpg)
